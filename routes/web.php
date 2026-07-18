@@ -14,6 +14,10 @@ Route::get('/', TestTreasure::class)->name('home');
 // Shareable deep link: /t/ABCD2345 pre-fills the code on the test screen.
 Route::get('/t/{code}', TestTreasure::class)->name('treasure.test');
 
+// ---- Static legal pages ------------------------------------------------------
+Route::view('/privacy', 'pages.privacy')->name('privacy');
+Route::view('/terms', 'pages.terms')->name('terms');
+
 // ---- Social authentication (Google, Microsoft, Facebook in v1) ---------------
 // Named 'login' so the `auth` middleware redirects guests here.
 Route::get('/login', function () {

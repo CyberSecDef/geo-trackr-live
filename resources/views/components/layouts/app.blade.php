@@ -38,6 +38,7 @@
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
     <div class="min-h-full flex flex-col">
@@ -76,6 +77,11 @@
                                 <a href="{{ route('home') }}" wire:navigate @click="open = false"
                                    class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
                                 <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
+                                <a href="{{ route('privacy') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Privacy</a>
+                                <a href="{{ route('terms') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Terms</a>
+                                <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit"
@@ -86,6 +92,11 @@
                                    class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
                                 <a href="{{ route('login') }}" wire:navigate @click="open = false"
                                    class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Sign in</a>
+                                <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
+                                <a href="{{ route('privacy') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Privacy</a>
+                                <a href="{{ route('terms') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Terms</a>
                             @endauth
                         </div>
                     </div>
@@ -107,11 +118,20 @@
 
         <footer class="border-t border-slate-200 px-4 py-6 text-center dark:border-slate-800">
             <p class="text-xs text-slate-400 dark:text-slate-500">Find the treasure. Distance only — you figure out where.</p>
+            <p class="mt-2 flex items-center justify-center gap-3 text-xs text-slate-400 dark:text-slate-500">
+                <a href="{{ route('privacy') }}" wire:navigate class="hover:underline">Privacy</a>
+                <span aria-hidden="true">·</span>
+                <a href="{{ route('terms') }}" wire:navigate class="hover:underline">Terms</a>
+            </p>
             <p class="mx-auto mt-2 max-w-xl text-[11px] leading-relaxed text-slate-400/80 dark:text-slate-600">
                 Geo.Trackr.Live is an independent game and is not affiliated with, sponsored by, or endorsed by
                 Geocaching.com or Groundspeak Inc.
             </p>
         </footer>
     </div>
+    {{-- Ensure the Livewire+Alpine runtime loads on every page, including plain
+         view routes (privacy/terms/login) that render no Livewire component —
+         otherwise the theme toggle and hamburger menu wouldn't initialize. --}}
+    @livewireScripts
 </body>
 </html>
