@@ -1,5 +1,11 @@
+@php
+    // Server-side dark class from the JS-set `theme` cookie. Rendering it here
+    // (not only via JS) means it survives Livewire wire:navigate morphs, which
+    // otherwise reset <html> to the server markup and drop the class.
+    $prefersDark = request()->cookie('theme') === 'dark';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full{{ $prefersDark ? ' dark' : '' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,15 +13,27 @@
     <title>{{ $title ?? 'Geo.Trackr.Live — Find the Signal' }}</title>
 
     {{-- Apply the saved theme before paint (no flash). Reads the `theme` cookie,
-         falling back to the OS preference when unset. --}}
+         falling back to the OS preference when unset, and persists the result so
+         server-rendered pages (incl. wire:navigate responses) know the theme.
+         Re-applies after Livewire navigations, whose morph can drop the class. --}}
     <script>
         (function () {
-            try {
-                var m = document.cookie.match(/(?:^|; )theme=(dark|light)/);
-                var theme = m ? m[1]
-                    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                if (theme === 'dark') document.documentElement.classList.add('dark');
-            } catch (e) {}
+            function applyTheme() {
+                try {
+                    var m = document.cookie.match(/(?:^|; )theme=(dark|light)/);
+                    var theme = m ? m[1]
+                        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    if (!m) {
+                        document.cookie = 'theme=' + theme + '; path=/; max-age=31536000; samesite=lax';
+                    }
+                    document.documentElement.classList.toggle('dark', theme === 'dark');
+                } catch (e) {}
+            }
+            applyTheme();
+            if (!window.__themeNavBound) {
+                window.__themeNavBound = true;
+                document.addEventListener('livewire:navigated', applyTheme);
+            }
         })();
     </script>
 
