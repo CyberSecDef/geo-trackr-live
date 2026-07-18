@@ -51,6 +51,15 @@
 
             {{-- Location capture --}}
             <div class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                {{-- Read-only preview: shows where the GPS currently places the pin. --}}
+                <div class="relative mb-3 h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div x-ref="map" class="h-full w-full"></div>
+                    <div x-show="!hasFix" x-cloak
+                         class="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-100 px-4 text-center text-xs text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                        Capture your location to preview where the treasure pin will drop.
+                    </div>
+                </div>
+
                 <button type="button" x-on:click="capture()" x-bind:disabled="busy"
                         class="w-full rounded-lg bg-slate-900 px-4 py-2.5 font-medium text-white disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900">
                     <span x-show="!busy">📍 Capture my location</span>
@@ -111,6 +120,10 @@
             Alpine.data('locationCapture', () => ({
                 busy: false,
                 geoError: '',
+                hasFix: false,
+                map: null,
+                marker: null,
+                accCircle: null,
                 capture() {
                     this.geoError = '';
                     if (!navigator.geolocation) {
@@ -121,6 +134,7 @@
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
                             this.busy = false;
+                            this.showOnMap(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
                             this.$wire.setLocation(
                                 pos.coords.latitude,
                                 pos.coords.longitude,
@@ -135,6 +149,51 @@
                         },
                         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
                     );
+                },
+                // Read-only Leaflet preview of where the GPS puts the pin.
+                showOnMap(lat, lng, accuracy) {
+                    this.hasFix = true;
+                    const acc = accuracy || 0;
+
+                    if (!this.map) {
+                        this.map = window.L.map(this.$refs.map, {
+                            zoomControl: false,
+                            attributionControl: true,
+                            dragging: false,
+                            scrollWheelZoom: false,
+                            doubleClickZoom: false,
+                            boxZoom: false,
+                            keyboard: false,
+                            touchZoom: false,
+                            tap: false,
+                        }).setView([lat, lng], 18);
+
+                        window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            attribution: '&copy; OpenStreetMap contributors',
+                        }).addTo(this.map);
+
+                        // Translucent accuracy halo + a precise dot at the GPS point.
+                        this.accCircle = window.L.circle([lat, lng], {
+                            radius: acc, color: '#6366f1', weight: 1,
+                            fillColor: '#6366f1', fillOpacity: 0.12,
+                        }).addTo(this.map);
+                        this.marker = window.L.circleMarker([lat, lng], {
+                            radius: 7, color: '#ffffff', weight: 2,
+                            fillColor: '#4f46e5', fillOpacity: 1,
+                        }).addTo(this.map);
+                    } else {
+                        this.map.setView([lat, lng], 18);
+                        this.marker.setLatLng([lat, lng]);
+                        this.accCircle.setLatLng([lat, lng]).setRadius(acc);
+                    }
+
+                    // The container may have been display:none while empty; make
+                    // sure Leaflet re-measures now that the pin is shown.
+                    this.$nextTick(() => this.map.invalidateSize());
+                },
+                destroy() {
+                    if (this.map) { this.map.remove(); this.map = null; }
                 },
             }));
         </script>
