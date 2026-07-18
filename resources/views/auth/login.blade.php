@@ -13,6 +13,8 @@
                    class="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 px-4 py-2.5 font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                     <span class="text-lg">G</span> Continue with Google
                 </a>
+                {{-- Microsoft & Facebook deferred: credentials not yet configured.
+                     Re-enable by uncommenting once the providers are set up in .env.
                 <a href="{{ route('auth.redirect', 'microsoft') }}"
                    class="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 px-4 py-2.5 font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                     <span class="text-lg">⊞</span> Continue with Microsoft
@@ -21,6 +23,7 @@
                    class="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 px-4 py-2.5 font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                     <span class="text-lg">f</span> Continue with Facebook
                 </a>
+                --}}
             </div>
         </div>
 
