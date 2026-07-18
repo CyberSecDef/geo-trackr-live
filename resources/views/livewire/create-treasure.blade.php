@@ -53,7 +53,9 @@
             <div class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                 {{-- Read-only preview: shows where the GPS currently places the pin. --}}
                 <div class="relative mb-3 h-48 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div x-ref="map" class="h-full w-full"></div>
+                    {{-- wire:ignore: Leaflet manages this element's DOM; without it
+                         Livewire's morph on setLocation() wipes the map's tiles. --}}
+                    <div wire:ignore x-ref="map" class="h-full w-full"></div>
                     <div x-show="!hasFix" x-cloak
                          class="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-100 px-4 text-center text-xs text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                         Capture your location to preview where the treasure pin will drop.
@@ -152,8 +154,12 @@
                 },
                 // Read-only Leaflet preview of where the GPS puts the pin.
                 showOnMap(lat, lng, accuracy) {
-                    this.hasFix = true;
                     const acc = accuracy || 0;
+                    if (!window.L) {
+                        this.geoError = 'Map preview could not load. Your location was still captured.';
+                        return;
+                    }
+                    this.hasFix = true;
 
                     if (!this.map) {
                         this.map = window.L.map(this.$refs.map, {
