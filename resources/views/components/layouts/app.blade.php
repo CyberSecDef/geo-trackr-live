@@ -70,12 +70,12 @@
                         <div x-show="open" x-cloak x-transition @click.outside="open = false"
                              class="absolute right-0 z-50 mt-2 w-48 origin-top-right overflow-hidden rounded-lg border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900">
                             @auth
+                                <a href="{{ route('home') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
                                 <a href="{{ route('treasures.create') }}" wire:navigate @click="open = false"
                                    class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Create treasure</a>
                                 <a href="{{ route('treasures.index') }}" wire:navigate @click="open = false"
                                    class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">View treasures</a>
-                                <a href="{{ route('home') }}" wire:navigate @click="open = false"
-                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
                                 <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
                                 <a href="{{ route('privacy') }}" wire:navigate @click="open = false"
                                    class="block px-4 py-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Privacy</a>
