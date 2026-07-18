@@ -21,6 +21,35 @@
                 </p>
             </div>
             <div class="flex shrink-0 items-center gap-2 text-sm">
+                <button type="button" aria-label="Copy share link"
+                        x-data="{
+                            copied: false,
+                            copyLink() {
+                                const url = @js(route('treasure.test', $treasure->code));
+                                const done = () => {
+                                    this.copied = true;
+                                    clearTimeout(this._t);
+                                    this._t = setTimeout(() => this.copied = false, 2000);
+                                };
+                                const fallback = () => {
+                                    const t = document.createElement('textarea');
+                                    t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
+                                    document.body.appendChild(t); t.select();
+                                    try { document.execCommand('copy'); } catch (e) {}
+                                    t.remove(); done();
+                                };
+                                if (navigator.clipboard && window.isSecureContext) {
+                                    navigator.clipboard.writeText(url).then(done).catch(fallback);
+                                } else {
+                                    fallback();
+                                }
+                            }
+                        }"
+                        x-on:click="copyLink()"
+                        class="flex items-center gap-1.5 rounded border border-slate-300 px-3 py-1.5 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                    <span x-show="!copied">🔗 Copy</span>
+                    <span x-show="copied" x-cloak class="text-emerald-600 dark:text-emerald-400">✓ Copied</span>
+                </button>
                 <button wire:click="togglePause({{ $treasure->id }})"
                         class="rounded border border-slate-300 px-3 py-1.5 dark:border-slate-700">
                     {{ $treasure->isActive() ? 'Pause' : 'Resume' }}
