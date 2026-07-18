@@ -43,19 +43,8 @@
     <div class="min-h-full flex flex-col">
         <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <nav class="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-                <a href="{{ route('home') }}" class="font-semibold tracking-tight">🧭 Geo.Trackr.Live</a>
-                <div class="flex items-center gap-4 text-sm">
-                    @auth
-                        <a href="{{ route('treasures.index') }}" class="hover:underline">My Treasures</a>
-                        <a href="{{ route('treasures.create') }}" class="rounded bg-slate-900 px-3 py-1.5 text-white dark:bg-slate-100 dark:text-slate-900">Create</a>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="text-slate-500 hover:underline dark:text-slate-400">Sign out</button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}" class="hover:underline">Sign in</a>
-                    @endauth
-
+                <a href="{{ route('home') }}" wire:navigate class="font-semibold tracking-tight">Geo.Trackr.Live</a>
+                <div class="flex items-center gap-2">
                     {{-- Day / night toggle. Persists the choice to the `theme` cookie. --}}
                     <button type="button" aria-label="Toggle day / night mode"
                             x-data="{ dark: document.documentElement.classList.contains('dark') }"
@@ -67,6 +56,39 @@
                         <span x-cloak x-show="!dark">🌙</span>
                         <span x-cloak x-show="dark">☀️</span>
                     </button>
+
+                    {{-- Hamburger menu holding the page links. --}}
+                    <div x-data="{ open: false }" class="relative" @keydown.escape.window="open = false">
+                        <button type="button" @click="open = ! open" :aria-expanded="open"
+                                aria-label="Menu" aria-haspopup="true"
+                                class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <div x-show="open" x-cloak x-transition @click.outside="open = false"
+                             class="absolute right-0 z-50 mt-2 w-48 origin-top-right overflow-hidden rounded-lg border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                            @auth
+                                <a href="{{ route('treasures.create') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Create treasure</a>
+                                <a href="{{ route('treasures.index') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">View treasures</a>
+                                <a href="{{ route('home') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
+                                <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                            class="block w-full px-4 py-2 text-left text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">Sign out</button>
+                                </form>
+                            @else
+                                <a href="{{ route('home') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Home</a>
+                                <a href="{{ route('login') }}" wire:navigate @click="open = false"
+                                   class="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Sign in</a>
+                            @endauth
+                        </div>
+                    </div>
                 </div>
             </nav>
         </header>
