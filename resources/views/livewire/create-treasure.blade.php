@@ -96,9 +96,13 @@
                 @error('photo') <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
-            <button type="submit" wire:loading.attr="disabled"
+            {{-- Disable submit while the image is still uploading, otherwise a
+                 quick tap can create the treasure before the photo is attached
+                 (the upload lands orphaned and the treasure has no image). --}}
+            <button type="submit" wire:loading.attr="disabled" wire:target="photo, save"
                     class="w-full rounded-lg bg-emerald-600 px-4 py-3 font-medium text-white disabled:opacity-50 dark:bg-emerald-500">
-                Create treasure
+                <span wire:loading.remove wire:target="photo">Create treasure</span>
+                <span wire:loading wire:target="photo">Waiting for image to finish uploading…</span>
             </button>
         </form>
 
