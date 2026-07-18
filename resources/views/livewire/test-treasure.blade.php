@@ -83,6 +83,24 @@
                     </button>
 
                     <p x-show="geoError" x-text="geoError" class="text-center text-sm text-rose-300"></p>
+
+                    {{-- Shown when the browser has location hard-blocked for this
+                         site: JS can't re-prompt, so guide the user to re-enable it.
+                         Auto-continues once they do (permission-change listener). --}}
+                    <div x-show="denied" x-cloak
+                         class="rounded-2xl border border-rose-300/40 bg-rose-500/10 p-4 text-left text-sm text-rose-100 backdrop-blur">
+                        <p class="font-semibold">📍 Location is blocked for this site</p>
+                        <p class="mt-1 text-rose-100/80">Your browser is remembering an earlier “Block”. Re-enable location, then it'll continue automatically:</p>
+                        <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-rose-100/80">
+                            <li><span class="font-semibold">iPhone / Safari:</span> tap <span class="font-semibold">aA</span> at the left of the address bar → <span class="font-semibold">Website Settings</span> → Location → <span class="font-semibold">Allow</span>.</li>
+                            <li><span class="font-semibold">Android / Chrome:</span> tap the <span class="font-semibold">🔒</span> (or ⓘ) left of the address → <span class="font-semibold">Permissions</span> → Location → <span class="font-semibold">Allow</span>.</li>
+                            <li>Make sure your phone's system Location is also on for the browser.</li>
+                        </ul>
+                        <button type="button" x-on:click="runTest()"
+                                class="mt-3 rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/25">
+                            I've allowed it — try again
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Result --}}
@@ -107,12 +125,38 @@
                 Alpine.data('geocacheTester', () => ({
                     busy: false,
                     geoError: '',
-                    runTest() {
+                    denied: false,       // browser has location hard-blocked for this site
+                    watchingPerm: false, // avoid stacking permission-change listeners
+                    async runTest() {
                         this.geoError = '';
+                        this.denied = false;
                         if (!navigator.geolocation) {
                             this.geoError = 'Your browser does not support geolocation.';
                             return;
                         }
+                        // If the Permissions API is available, check up front. A hard
+                        // "denied" can't be re-prompted from JS, so we show guidance
+                        // and re-run automatically if the user flips it to allow.
+                        if (navigator.permissions?.query) {
+                            try {
+                                const status = await navigator.permissions.query({ name: 'geolocation' });
+                                if (status.state === 'denied') {
+                                    this.denied = true;
+                                    if (!this.watchingPerm) {
+                                        this.watchingPerm = true;
+                                        status.onchange = () => {
+                                            if (status.state !== 'denied') { this.denied = false; this.acquire(); }
+                                        };
+                                    }
+                                    return;
+                                }
+                            } catch (e) { /* older Safari: no geolocation permission name — fall through */ }
+                        }
+                        // 'granted' or 'prompt' (or unknown): request a fix. In the
+                        // 'prompt' state this is what surfaces the allow/deny dialog.
+                        this.acquire();
+                    },
+                    acquire() {
                         this.busy = true;
                         navigator.geolocation.getCurrentPosition(
                             (pos) => {
@@ -125,9 +169,14 @@
                             },
                             (err) => {
                                 this.busy = false;
-                                this.geoError = err.code === err.PERMISSION_DENIED
-                                    ? 'Location permission is required to play.'
-                                    : 'Could not get your location. Try again.';
+                                if (err.code === err.PERMISSION_DENIED) {
+                                    // Denied at (or after) the prompt — show re-enable help.
+                                    this.denied = true;
+                                } else if (err.code === err.TIMEOUT) {
+                                    this.geoError = 'Timed out getting your location. Make sure GPS is on and try again.';
+                                } else {
+                                    this.geoError = 'Could not get your location. Check that location services are on, then try again.';
+                                }
                             },
                             { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
                         );
