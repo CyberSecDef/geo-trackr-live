@@ -3,6 +3,134 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/* Class-based dark mode: `dark:` utilities apply when <html> has the `dark` class. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Hide x-cloak elements until Alpine initializes (prevents toggle-icon flash). */
+[x-cloak] { display: none !important; }
+
+/* =====================================================================
+   Game hero — the check-code / treasure-hunt screen.
+   A self-contained "deep space" panel (same look in light & dark) with a
+   starfield, shooting stars, a faded rotating wireframe globe, and glowing
+   display text. Aims for a young-adult adventure-game feel.
+   ===================================================================== */
+.game-hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 1.5rem;
+    background:
+        radial-gradient(135% 100% at 50% -10%,
+            #3730a3 0%, #1e1b4b 32%, #0b1026 62%, #05060f 100%);
+    box-shadow:
+        0 24px 70px -24px rgba(0, 0, 0, 0.65),
+        inset 0 0 140px rgba(79, 70, 229, 0.25);
+}
+
+/* Vignette to focus attention on the card. */
+.game-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* Twinkling starfield built from layered radial-gradients (no images). */
+.game-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(1.5px 1.5px at 10% 20%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 25% 62%, #c7d2fe 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 40% 32%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 55% 78%, #a5b4fc 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 70% 26%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 82% 56%, #e0e7ff 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 90% 16%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 33% 90%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 65% 94%, #c7d2fe 50%, transparent 51%),
+        radial-gradient(1px 1px at 48% 12%, #fff 50%, transparent 51%);
+    animation: twinkle 5s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+    from { opacity: 0.5; }
+    to   { opacity: 0.95; }
+}
+
+/* Faded wireframe globe, slowly rotating behind the content. */
+.game-globe {
+    position: absolute;
+    left: 50%;
+    top: 60%;
+    width: min(92%, 560px);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+    color: #818cf8;
+    opacity: 0.22;
+    filter: drop-shadow(0 0 32px rgba(129, 140, 248, 0.5));
+    animation: globe-spin 90s linear infinite;
+}
+
+@keyframes globe-spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Shooting stars streak down-left; positioned/delayed inline per element. */
+.shooting-star {
+    position: absolute;
+    z-index: 0;
+    width: 140px;
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0));
+    filter: drop-shadow(0 0 6px #a5b4fc);
+    opacity: 0;
+    transform: rotate(-32deg);
+    animation: shoot 7s linear infinite;
+}
+
+@keyframes shoot {
+    0%   { opacity: 0; transform: translate3d(0, 0, 0) rotate(-32deg) scaleX(0.2); }
+    6%   { opacity: 1; }
+    20%  { opacity: 1; transform: translate3d(-340px, 230px, 0) rotate(-32deg) scaleX(1); }
+    28%  { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* Glowing gold display text for the headline. */
+.game-title {
+    background: linear-gradient(180deg, #fef9c3 0%, #fde047 46%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 12px rgba(250, 204, 21, 0.35));
+}
+
+.game-kicker {
+    color: #c7d2fe;
+    letter-spacing: 0.35em;
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+    .game-stars,
+    .game-globe,
+    .shooting-star {
+        animation: none !important;
+    }
+    .shooting-star { opacity: 0 !important; }
+}
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
